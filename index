@@ -245,6 +245,26 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 
 /* NOTIF DOT */
 .notif-dot{width:9px;height:9px;background:var(--red);border-radius:50%;flex-shrink:0}
+
+/* XLS TOOLBAR */
+.xls-toolbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;padding:10px 12px;background:#fff;border-radius:var(--rs);box-shadow:var(--sh0)}
+.xls-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;border-radius:7px;font-size:11.5px;font-weight:800;font-family:var(--f1);cursor:pointer;border:none;transition:.2s;white-space:nowrap}
+.xls-btn:active{transform:scale(.96)}
+.xls-import{background:#e8f5e9;color:#1e8449;border:1.5px solid #a9dfbf}
+.xls-export{background:#e8f4fd;color:#1a5276;border:1.5px solid #aed6f1}
+.xls-template{background:#fef9e7;color:#7d6608;border:1.5px solid #f9e79f}
+.xls-edit{background:#fdf2f1;color:var(--red);border:1.5px solid #f5b7b1;margin-left:auto}
+.xls-delete{background:#fdf2f1;color:var(--red);border:1.5px solid #f5b7b1}
+.xls-btn:hover{filter:brightness(.93)}
+.xls-import-input{display:none}
+
+/* SELECT MODE */
+.li.selected{background:var(--blue-bg);border:2px solid var(--blue2)}
+.li .li-check{display:none;width:20px;height:20px;border:2px solid var(--gray3);border-radius:4px;flex-shrink:0;cursor:pointer;transition:.2s;align-items:center;justify-content:center;font-size:13px}
+.select-mode .li .li-check{display:flex}
+.select-mode .li.selected .li-check{background:var(--blue2);border-color:var(--blue2);color:#fff}
+.select-bar{display:none;align-items:center;gap:8px;padding:9px 12px;background:var(--blue-bg);border-radius:var(--rs);margin-bottom:8px;font-size:13px;font-weight:700;font-family:var(--f1);color:var(--blue)}
+.select-bar.on{display:flex}
 </style>
 </head>
 <body class="no-nav">
@@ -336,8 +356,22 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
   <!-- MURID -->
   <div class="tc on" id="tMurid">
     <div class="kelas-ctx" id="guruKelasBanner" style="display:none;margin-bottom:10px"></div>
+    <!-- XLS Toolbar Murid -->
+    <div class="xls-toolbar" id="xlsToolbarMurid">
+      <button class="xls-btn xls-import" onclick="triggerImport('murid')">&#128229; Import XLS</button>
+      <input type="file" class="xls-import-input" id="importFileMurid" accept=".xlsx,.xls,.csv" onchange="importXLS('murid',this)">
+      <button class="xls-btn xls-export" onclick="exportXLS('murid')">&#128228; Export XLS</button>
+      <button class="xls-btn xls-template" onclick="downloadTemplate('murid')">&#128203; Template</button>
+      <button class="xls-btn xls-edit" id="btnBulkEditMurid" onclick="bulkEditMurid()">&#9999; Edit</button>
+      <button class="xls-btn xls-delete" id="btnBulkDelMurid" onclick="bulkDeleteMurid()">&#128465; Hapus</button>
+    </div>
+    <div class="select-bar" id="selectBarMurid">
+      <input type="checkbox" id="checkAllMurid" onchange="toggleSelectAllMurid(this)">
+      <span id="selectCountMurid">0 dipilih</span>
+      <button class="btn btn-xs btn-ghost" style="margin-left:auto" onclick="exitSelectMurid()">X Batal</button>
+    </div>
     <div class="row" style="margin-bottom:10px">
-      <div class="search-wrap" style="flex:1;margin-bottom:0"><span class="search-ico">🔍</span><input class="fc" placeholder="Cari nama / NIS murid..." id="srcMurid" oninput="renderMurid()"></div>
+      <div class="search-wrap" style="flex:1;margin-bottom:0"><span class="search-ico">&#128269;</span><input class="fc" placeholder="Cari nama / NIS murid..." id="srcMurid" oninput="renderMurid()"></div>
       <button class="btn btn-red btn-sm" id="btnTambahMurid" onclick="openAddMurid()">+ Tambah</button>
     </div>
     <div id="muridList"></div>
@@ -345,8 +379,22 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 
   <!-- GURU -->
   <div class="tc" id="tGuru">
+    <!-- XLS Toolbar Guru -->
+    <div class="xls-toolbar">
+      <button class="xls-btn xls-import" onclick="triggerImport('guru')">&#128229; Import XLS</button>
+      <input type="file" class="xls-import-input" id="importFileGuru" accept=".xlsx,.xls,.csv" onchange="importXLS('guru',this)">
+      <button class="xls-btn xls-export" onclick="exportXLS('guru')">&#128228; Export XLS</button>
+      <button class="xls-btn xls-template" onclick="downloadTemplate('guru')">&#128203; Template</button>
+      <button class="xls-btn xls-edit" id="btnBulkEditGuru" onclick="bulkEditGuru()">&#9999; Edit</button>
+      <button class="xls-btn xls-delete" id="btnBulkDelGuru" onclick="bulkDeleteGuru()">&#128465; Hapus</button>
+    </div>
+    <div class="select-bar" id="selectBarGuru">
+      <input type="checkbox" id="checkAllGuru" onchange="toggleSelectAllGuru(this)">
+      <span id="selectCountGuru">0 dipilih</span>
+      <button class="btn btn-xs btn-ghost" style="margin-left:auto" onclick="exitSelectGuru()">X Batal</button>
+    </div>
     <div class="row" style="margin-bottom:8px">
-      <div class="search-wrap" style="flex:1"><span class="search-ico">🔍</span><input class="fc" placeholder="Cari guru..." id="srcGuru" oninput="renderGuru()"></div>
+      <div class="search-wrap" style="flex:1"><span class="search-ico">&#128269;</span><input class="fc" placeholder="Cari guru..." id="srcGuru" oninput="renderGuru()"></div>
       <button class="btn btn-red btn-sm" onclick="openAddGuru()">+ Tambah</button>
     </div>
     <div id="guruList"></div>
@@ -354,6 +402,20 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
 
   <!-- KELAS -->
   <div class="tc" id="tKelas">
+    <!-- XLS Toolbar Kelas -->
+    <div class="xls-toolbar">
+      <button class="xls-btn xls-import" onclick="triggerImport('kelas')">&#128229; Import XLS</button>
+      <input type="file" class="xls-import-input" id="importFileKelas" accept=".xlsx,.xls,.csv" onchange="importXLS('kelas',this)">
+      <button class="xls-btn xls-export" onclick="exportXLS('kelas')">&#128228; Export XLS</button>
+      <button class="xls-btn xls-template" onclick="downloadTemplate('kelas')">&#128203; Template</button>
+      <button class="xls-btn xls-edit" id="btnBulkEditKelas" onclick="bulkEditKelas()">&#9999; Edit</button>
+      <button class="xls-btn xls-delete" id="btnBulkDelKelas" onclick="bulkDeleteKelas()">&#128465; Hapus</button>
+    </div>
+    <div class="select-bar" id="selectBarKelas">
+      <input type="checkbox" id="checkAllKelas" onchange="toggleSelectAllKelas(this)">
+      <span id="selectCountKelas">0 dipilih</span>
+      <button class="btn btn-xs btn-ghost" style="margin-left:auto" onclick="exitSelectKelas()">X Batal</button>
+    </div>
     <button class="btn btn-red btn-sm btn-blk" style="margin-bottom:8px" onclick="openModal('mAddKelas')">+ Tambah Kelas</button>
     <div id="kelasList"></div>
   </div>
@@ -489,8 +551,55 @@ textarea.fc{resize:vertical;min-height:80px;line-height:1.6}
   </div>
 </div></div>
 
-<!-- Add Guru -->
-<div class="moverlay" id="mAddGuru"><div class="msheet">
+<!-- Edit Guru -->
+<div class="moverlay" id="mEditGuru"><div class="msheet">
+  <div class="mhandle"></div>
+  <div class="mttl">&#9999;&#65039; Edit Data Guru</div>
+  <input type="hidden" id="eGuruId">
+  <div class="fg"><label class="fl">NIP</label><input class="fc" id="eGuruNIP" placeholder="Nomor NIP guru"></div>
+  <div class="fg"><label class="fl">Nama Lengkap</label><input class="fc" id="eGuruNama" placeholder="Nama lengkap guru"></div>
+  <div class="fg"><label class="fl">Mengajar Kelas</label>
+    <select class="fc fc-sel" id="eGuruKelas"><option value="">-- Pilih Kelas --</option></select>
+  </div>
+  <div class="fg"><label class="fl">Mata Pelajaran / Jabatan</label><input class="fc" id="eGuruMapel" placeholder="contoh: Wali Kelas IV-A"></div>
+  <div class="fg">
+    <label class="fl">Password Baru (kosongkan jika tidak diubah)</label>
+    <div style="position:relative">
+      <input class="fc" type="text" id="eGuruPass" placeholder="Isi jika ingin ganti password" style="padding-right:40px">
+    </div>
+  </div>
+  <div class="row" style="gap:8px">
+    <button class="btn btn-ghost" style="flex:1" onclick="closeModal('mEditGuru')">Batal</button>
+    <button class="btn btn-red" style="flex:2" onclick="updateGuru()">&#128190; Update</button>
+  </div>
+</div></div>
+
+<!-- Edit Kelas -->
+<div class="moverlay" id="mEditKelas"><div class="msheet">
+  <div class="mhandle"></div>
+  <div class="mttl">&#9999;&#65039; Edit Kelas</div>
+  <input type="hidden" id="eKelasId">
+  <div class="fg"><label class="fl">Level Kelas</label>
+    <select class="fc fc-sel" id="eKelasLevel"><option>I</option><option>II</option><option>III</option><option>IV</option><option>V</option><option>VI</option></select>
+  </div>
+  <div class="fg"><label class="fl">Nama Kelas (misal: A, B)</label><input class="fc" id="eKelasNama" placeholder="A"></div>
+  <div class="fg"><label class="fl">Tahun Ajaran</label><input class="fc" id="eKelasTahun" value="2025/2026"></div>
+  <div class="row" style="gap:8px">
+    <button class="btn btn-ghost" style="flex:1" onclick="closeModal('mEditKelas')">Batal</button>
+    <button class="btn btn-red" style="flex:2" onclick="updateKelas()">&#128190; Update</button>
+  </div>
+</div></div>
+
+<!-- Modal Import Preview -->
+<div class="moverlay" id="mImportPreview"><div class="msheet">
+  <div class="mhandle"></div>
+  <div class="mttl" id="importPreviewTitle">&#128229; Preview Import</div>
+  <div id="importPreviewBody" style="max-height:50vh;overflow-y:auto;margin-bottom:14px;font-size:13px"></div>
+  <div class="row" style="gap:8px">
+    <button class="btn btn-ghost" style="flex:1" onclick="closeModal('mImportPreview')">Batal</button>
+    <button class="btn btn-green" style="flex:2" id="btnConfirmImport" onclick="confirmImport()">&#10003; Simpan Import</button>
+  </div>
+</div></div><div class="msheet">
   <div class="mhandle"></div>
   <div class="mttl">👩‍🏫 Tambah Data Guru</div>
   <div class="fg"><label class="fl">NIP</label><input class="fc" id="gNIP" placeholder="Nomor NIP guru" autocomplete="off"></div>
@@ -1272,51 +1381,65 @@ async function fillKelasOptions(selectIds=['aKelas','gKelas','eKelas']) {
 
 function renderMurid() {
   const q = document.getElementById('srcMurid')?.value.toLowerCase()||'';
-  // Guru hanya melihat murid sesuai kelasnya
   const guruKelas = S.role==='guru' ? (S.user?.kelas||'') : '';
   let list = DB.getArr('murid').filter(m=>(m.nama+m.nis+m.kelas).toLowerCase().includes(q));
   if (guruKelas) list = list.filter(m=>m.kelas===guruKelas);
   const colors = ['var(--red)','var(--blue2)','var(--green2)','var(--yellow)'];
-  const canEdit = S.role==='admin'; // guru hanya lihat, tidak edit/hapus
+  const canEdit = S.role==='admin';
+  const isSelect = document.getElementById('tMurid')?.classList.contains('select-mode');
   document.getElementById('muridList').innerHTML = list.length ? list.map((m,i)=>`
-    <div class="li">
+    <div class="li${_selectedMurid.has(m.id)?` selected`:``}" id="murid-li-${m.id}" onclick="${isSelect?`toggleSelectMurid(${m.id})`:``}">
+      ${isSelect?`<div class="li-check" onclick="event.stopPropagation();toggleSelectMurid(${m.id})">${_selectedMurid.has(m.id)?'&#10003;':''}</div>`:''}
       <div class="av" style="background:${colors[i%4]}">${m.nama?.[0]||'?'}</div>
       <div class="li-info">
         <div class="li-name">${m.nama}</div>
         <div class="li-det">NIS: ${m.nis||'—'} · Kelas ${m.kelas||'—'} · ${m.jk==='L'?'Laki-laki':'Perempuan'} · ${m.agama||''}</div>
       </div>
-      ${canEdit?`<div class="li-acts">
-        <button class="btn btn-xs btn-blue" onclick="openEditMurid(${m.id})">✏️</button>
-        <button class="btn btn-xs btn-danger" onclick="delMurid(${m.id})">🗑️</button>
+      ${canEdit&&!isSelect?`<div class="li-acts">
+        <button class="btn btn-xs btn-blue" onclick="openEditMurid(${m.id})">&#9999;</button>
+        <button class="btn btn-xs btn-danger" onclick="delMurid(${m.id})">&#128465;</button>
       </div>`:`<span class="bdg bdg-blue">Kelas ${m.kelas}</span>`}
-    </div>`).join('') : `<div class="empty"><div class="empty-ico">🧑‍🎓</div><div class="empty-t">Tidak ada murid${guruKelas?' di Kelas '+guruKelas:''}</div><div class="empty-s">${canEdit?'Tap "+ Tambah" untuk menambah':'Hubungi Admin untuk menambah murid'}</div></div>`;
+    </div>`).join('') : `<div class="empty"><div class="empty-ico">&#127891;</div><div class="empty-t">Tidak ada murid${guruKelas?' di Kelas '+guruKelas:''}</div><div class="empty-s">${canEdit?'Tap "+ Tambah" untuk menambah':'Hubungi Admin untuk menambah murid'}</div></div>`;
+  updateSelectCountMurid();
 }
 
 function renderGuru() {
   const q = document.getElementById('srcGuru')?.value.toLowerCase()||'';
   const list = DB.getArr('guru').filter(g=>(g.nama+g.nip).toLowerCase().includes(q));
+  const isSelect = document.getElementById('tGuru')?.classList.contains('select-mode');
   document.getElementById('guruList').innerHTML = list.length ? list.map(g=>`
-    <div class="li">
-      <div class="av" style="background:var(--blue2)">👩‍🏫</div>
+    <div class="li${_selectedGuru.has(g.id)?` selected`:``}" id="guru-li-${g.id}" onclick="${isSelect?`toggleSelectGuru(${g.id})`:``}">
+      ${isSelect?`<div class="li-check" onclick="event.stopPropagation();toggleSelectGuru(${g.id})">${_selectedGuru.has(g.id)?'&#10003;':''}</div>`:''}
+      <div class="av" style="background:var(--blue2)">&#128105;&#8205;&#127979;</div>
       <div class="li-info">
         <div class="li-name">${g.nama}</div>
         <div class="li-det">NIP: ${g.nip||'—'} · ${g.mapel||'—'} · Kelas ${g.kelas||'—'}</div>
       </div>
-      <button class="btn btn-xs btn-danger" onclick="delGuru(${g.id})">🗑️</button>
-    </div>`).join('') : '<div class="empty"><div class="empty-ico">👩‍🏫</div><div class="empty-t">Belum ada data guru</div></div>';
+      ${!isSelect?`<div class="li-acts">
+        <button class="btn btn-xs btn-blue" onclick="openEditGuru(${g.id})">&#9999;</button>
+        <button class="btn btn-xs btn-danger" onclick="delGuru(${g.id})">&#128465;</button>
+      </div>`:''}
+    </div>`).join('') : '<div class="empty"><div class="empty-ico">&#128105;&#8205;&#127979;</div><div class="empty-t">Belum ada data guru</div></div>';
+  updateSelectCountGuru();
 }
 
 function renderKelas() {
   const list = DB.getArr('kelas');
+  const isSelect = document.getElementById('tKelas')?.classList.contains('select-mode');
   document.getElementById('kelasList').innerHTML = list.length ? list.map(k=>`
-    <div class="li">
-      <div class="av" style="background:var(--red);font-size:16px">🏫</div>
+    <div class="li${_selectedKelas.has(k.id)?` selected`:``}" id="kelas-li-${k.id}" onclick="${isSelect?`toggleSelectKelas(${k.id})`:``}">
+      ${isSelect?`<div class="li-check" onclick="event.stopPropagation();toggleSelectKelas(${k.id})">${_selectedKelas.has(k.id)?'&#10003;':''}</div>`:''}
+      <div class="av" style="background:var(--red);font-size:16px">&#127979;</div>
       <div class="li-info">
         <div class="li-name">Kelas ${k.full}</div>
         <div class="li-det">Level ${k.level} · TA ${k.tahun} · ${DB.getArr('murid').filter(m=>m.kelas===k.full).length} murid</div>
       </div>
-      <button class="btn btn-xs btn-danger" onclick="delKelas(${k.id})">🗑️</button>
-    </div>`).join('') : '<div class="empty"><div class="empty-ico">🏫</div><div class="empty-t">Belum ada kelas</div></div>';
+      ${!isSelect?`<div class="li-acts">
+        <button class="btn btn-xs btn-blue" onclick="openEditKelas(${k.id})">&#9999;</button>
+        <button class="btn btn-xs btn-danger" onclick="delKelas(${k.id})">&#128465;</button>
+      </div>`:''}
+    </div>`).join('') : '<div class="empty"><div class="empty-ico">&#127979;</div><div class="empty-t">Belum ada kelas</div></div>';
+  updateSelectCountKelas();
 }
 
 async function saveMurid() {
@@ -2253,6 +2376,368 @@ function showToast(msg, dur=2600) {
 // ============================================================
 // INIT
 // ============================================================
+// ============================================================
+// XLS IMPORT / EXPORT / TEMPLATE + SELECT
+// ============================================================
+
+// --- State for selection ---
+let _selectedMurid = new Set();
+let _selectedGuru  = new Set();
+let _selectedKelas = new Set();
+let _importPending = { type: null, data: [] };
+
+// ---- TRIGGER IMPORT ----
+function triggerImport(type) {
+  document.getElementById('importFile' + cap(type)).click();
+}
+
+// ---- PARSE CSV/XLS ----
+function parseCSVText(text) {
+  const lines = text.trim().split('\n').map(l=>l.replace(/\r/,''));
+  if (!lines.length) return [];
+  const headers = lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,''));
+  return lines.slice(1).filter(l=>l.trim()).map(line=>{
+    const vals = line.split(',').map(v=>v.trim().replace(/^"|"$/g,''));
+    const obj = {};
+    headers.forEach((h,i)=>{ obj[h] = vals[i]||''; });
+    return obj;
+  });
+}
+
+function normalizeImportRow(type, row) {
+  if (type==='murid') {
+    return {
+      nis: row['NIS']||row['nis']||'',
+      nama: row['Nama']||row['nama']||row['NAMA']||'',
+      jk: (row['JK']||row['jk']||'L').toUpperCase(),
+      tmptLhr: row['Tempat Lahir']||row['tmptLhr']||'',
+      tglLhr: row['Tgl Lahir']||row['tglLhr']||'',
+      agama: row['Agama']||row['agama']||'Islam',
+      kelas: row['Kelas']||row['kelas']||'',
+      pass: row['Password']||row['pass']||'murid123',
+      user: 'm'+(row['NIS']||row['nis']||Date.now()),
+    };
+  }
+  if (type==='guru') {
+    return {
+      nip: row['NIP']||row['nip']||'',
+      nama: row['Nama']||row['nama']||'',
+      kelas: row['Kelas']||row['kelas']||'',
+      mapel: row['Mapel']||row['mapel']||'',
+      pass: row['Password']||row['pass']||'guru123',
+      user: 'g'+(row['NIP']||row['nip']||Date.now()),
+    };
+  }
+  if (type==='kelas') {
+    const level = row['Level']||row['level']||'I';
+    const nama  = row['Nama']||row['nama']||'A';
+    return {
+      level, nama,
+      full: level+'-'+nama,
+      tahun: row['Tahun']||row['tahun']||'2025/2026',
+    };
+  }
+  return row;
+}
+
+function importXLS(type, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    let rows = [];
+    const text = e.target.result;
+    // Parse as CSV (works for .csv and basic excel-saved-as-csv)
+    rows = parseCSVText(text).map(r=>normalizeImportRow(type,r)).filter(r=>r.nama||r.nama!==undefined);
+    if (!rows.length) { showToast('&#9888;&#65039; Tidak ada data yang bisa dibaca. Gunakan format CSV/template.'); input.value=''; return; }
+    _importPending = { type, data: rows };
+    const labels = { murid:['NIS','Nama','JK','Kelas','Agama'], guru:['NIP','Nama','Kelas','Mapel'], kelas:['Level','Nama','Tahun Ajaran'] };
+    const fields = labels[type]||[];
+    const previewRows = rows.slice(0,10);
+    const tableHead = `<tr style="background:var(--gray1)">${fields.map(f=>`<th style="padding:6px 8px;font-size:11px;text-align:left">${f}</th>`).join('')}</tr>`;
+    const tableBody = previewRows.map(r=>{
+      const vals = type==='murid'?[r.nis,r.nama,r.jk,r.kelas,r.agama]:type==='guru'?[r.nip,r.nama,r.kelas,r.mapel]:[r.level,r.nama,r.tahun];
+      return `<tr>${vals.map(v=>`<td style="padding:5px 8px;font-size:12px;border-bottom:1px solid var(--gray1)">${v||'—'}</td>`).join('')}</tr>`;
+    }).join('');
+    document.getElementById('importPreviewTitle').textContent = '&#128229; Preview Import ' + cap(type) + ' (' + rows.length + ' baris)';
+    document.getElementById('importPreviewBody').innerHTML = `
+      <div style="margin-bottom:8px;font-size:12.5px;color:var(--gray5)">${rows.length} data siap diimpor${rows.length>10?' · Menampilkan 10 pertama':''}</div>
+      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse"><thead>${tableHead}</thead><tbody>${tableBody}</tbody></table></div>`;
+    openModal('mImportPreview');
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+
+async function confirmImport() {
+  const { type, data } = _importPending;
+  if (!type||!data.length) return;
+  const arr = DB.getArr(type);
+  let maxId = arr.reduce((m,x)=>Math.max(m,x.id||0),0);
+  const newItems = data.map(r=>({ ...r, id: ++maxId }));
+  DB.set(type, [...arr, ...newItems]);
+  closeModal('mImportPreview');
+  showToast('&#10003; ' + newItems.length + ' data ' + type + ' berhasil diimpor!');
+  if (type==='murid') { renderMurid(); document.getElementById('stMurid').textContent = DB.getArr('murid').length; }
+  if (type==='guru')  { renderGuru(); document.getElementById('stGuru').textContent = DB.getArr('guru').length; }
+  if (type==='kelas') { renderKelas(); fillKelasOptions(); document.getElementById('stKelas').textContent = DB.getArr('kelas').length; }
+  _importPending = { type: null, data: [] };
+}
+
+// ---- EXPORT XLS (CSV) ----
+function exportXLS(type) {
+  const data = DB.getArr(type);
+  if (!data.length) { showToast('&#9888;&#65039; Tidak ada data untuk diekspor'); return; }
+  let headers, rows;
+  if (type==='murid') {
+    headers = ['NIS','Nama','JK','Tempat Lahir','Tgl Lahir','Agama','Kelas','Password'];
+    rows = data.map(m=>[m.nis||'',m.nama||'',m.jk||'',m.tmptLhr||'',m.tglLhr||'',m.agama||'',m.kelas||'',m.pass||'']);
+  } else if (type==='guru') {
+    headers = ['NIP','Nama','Kelas','Mapel','Password'];
+    rows = data.map(g=>[g.nip||'',g.nama||'',g.kelas||'',g.mapel||'',g.pass||'']);
+  } else {
+    headers = ['Level','Nama','Full','Tahun'];
+    rows = data.map(k=>[k.level||'',k.nama||'',k.full||'',k.tahun||'']);
+  }
+  const csv = [headers, ...rows].map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const sch = DB.get('sekolah')||{};
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${type}_${(sch.nama||'SDN1Raja').replace(/\s/g,'_')}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  showToast('&#128228; Export ' + type + ' berhasil!');
+}
+
+// ---- DOWNLOAD TEMPLATE ----
+function downloadTemplate(type) {
+  let headers, example;
+  if (type==='murid') {
+    headers = ['NIS','Nama','JK','Tempat Lahir','Tgl Lahir','Agama','Kelas','Password'];
+    example = ['001','Ahmad Fauzi','L','Banjarmasin','2017-03-10','Islam','IV-A','murid123'];
+  } else if (type==='guru') {
+    headers = ['NIP','Nama','Kelas','Mapel','Password'];
+    example = ['197001011993011001','Ibu Siti Rahayu, S.Pd','IV-A','Wali Kelas IV-A','guru123'];
+  } else {
+    headers = ['Level','Nama','Tahun'];
+    example = ['I','A','2025/2026'];
+  }
+  const csv = [headers, example].map(r=>r.map(v=>'"'+v+'"').join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `template_${type}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  showToast('&#128203; Template ' + type + ' diunduh!');
+}
+
+// ---- SELECT MODE: MURID ----
+function enterSelectMurid() {
+  _selectedMurid.clear();
+  document.getElementById('tMurid').classList.add('select-mode');
+  document.getElementById('selectBarMurid').classList.add('on');
+  document.getElementById('btnBulkEditMurid').style.display='inline-flex';
+  document.getElementById('btnBulkDelMurid').style.display='inline-flex';
+  renderMurid();
+}
+function exitSelectMurid() {
+  _selectedMurid.clear();
+  document.getElementById('tMurid').classList.remove('select-mode');
+  document.getElementById('selectBarMurid').classList.remove('on');
+  document.getElementById('btnBulkEditMurid').style.display='none';
+  document.getElementById('btnBulkDelMurid').style.display='none';
+  document.getElementById('checkAllMurid').checked=false;
+  renderMurid();
+}
+function toggleSelectMurid(id) {
+  if (_selectedMurid.has(id)) _selectedMurid.delete(id); else _selectedMurid.add(id);
+  renderMurid();
+}
+function toggleSelectAllMurid(cb) {
+  const list = DB.getArr('murid');
+  if (cb.checked) list.forEach(m=>_selectedMurid.add(m.id)); else _selectedMurid.clear();
+  renderMurid();
+}
+function updateSelectCountMurid() {
+  const el = document.getElementById('selectCountMurid');
+  if (el) el.textContent = _selectedMurid.size + ' dipilih';
+}
+function bulkEditMurid() {
+  const isSelect = document.getElementById('tMurid').classList.contains('select-mode');
+  if (!isSelect) { enterSelectMurid(); showToast('Centang murid yang ingin diedit, lalu tap Edit lagi'); return; }
+  if (!_selectedMurid.size) { showToast('&#9888;&#65039; Pilih minimal 1 murid'); return; }
+  if (_selectedMurid.size===1) { const id=[..._selectedMurid][0]; exitSelectMurid(); openEditMurid(id); }
+  else { showToast('&#9888;&#65039; Pilih 1 murid untuk diedit sekaligus'); }
+}
+async function bulkDeleteMurid() {
+  const isSelect = document.getElementById('tMurid').classList.contains('select-mode');
+  if (!isSelect) { enterSelectMurid(); showToast('Centang murid yang ingin dihapus, lalu tap Hapus lagi'); return; }
+  if (!_selectedMurid.size) { showToast('&#9888;&#65039; Pilih minimal 1 murid'); return; }
+  if (!confirm('Hapus ' + _selectedMurid.size + ' murid terpilih?')) return;
+  let arr = DB.getArr('murid').filter(m=>!_selectedMurid.has(m.id));
+  DB.set('murid', arr);
+  showToast('&#10003; ' + _selectedMurid.size + ' murid dihapus');
+  exitSelectMurid();
+  document.getElementById('stMurid').textContent = DB.getArr('murid').length;
+}
+
+// ---- SELECT MODE: GURU ----
+function enterSelectGuru() {
+  _selectedGuru.clear();
+  document.getElementById('tGuru').classList.add('select-mode');
+  document.getElementById('selectBarGuru').classList.add('on');
+  document.getElementById('btnBulkEditGuru').style.display='inline-flex';
+  document.getElementById('btnBulkDelGuru').style.display='inline-flex';
+  renderGuru();
+}
+function exitSelectGuru() {
+  _selectedGuru.clear();
+  document.getElementById('tGuru').classList.remove('select-mode');
+  document.getElementById('selectBarGuru').classList.remove('on');
+  document.getElementById('btnBulkEditGuru').style.display='none';
+  document.getElementById('btnBulkDelGuru').style.display='none';
+  document.getElementById('checkAllGuru').checked=false;
+  renderGuru();
+}
+function toggleSelectGuru(id) {
+  if (_selectedGuru.has(id)) _selectedGuru.delete(id); else _selectedGuru.add(id);
+  renderGuru();
+}
+function toggleSelectAllGuru(cb) {
+  const list = DB.getArr('guru');
+  if (cb.checked) list.forEach(g=>_selectedGuru.add(g.id)); else _selectedGuru.clear();
+  renderGuru();
+}
+function updateSelectCountGuru() {
+  const el = document.getElementById('selectCountGuru');
+  if (el) el.textContent = _selectedGuru.size + ' dipilih';
+}
+function bulkEditGuru() {
+  const isSelect = document.getElementById('tGuru').classList.contains('select-mode');
+  if (!isSelect) { enterSelectGuru(); showToast('Centang guru yang ingin diedit, lalu tap Edit lagi'); return; }
+  if (!_selectedGuru.size) { showToast('&#9888;&#65039; Pilih minimal 1 guru'); return; }
+  if (_selectedGuru.size===1) { const id=[..._selectedGuru][0]; exitSelectGuru(); openEditGuru(id); }
+  else { showToast('&#9888;&#65039; Pilih 1 guru untuk diedit sekaligus'); }
+}
+async function bulkDeleteGuru() {
+  const isSelect = document.getElementById('tGuru').classList.contains('select-mode');
+  if (!isSelect) { enterSelectGuru(); showToast('Centang guru yang ingin dihapus, lalu tap Hapus lagi'); return; }
+  if (!_selectedGuru.size) { showToast('&#9888;&#65039; Pilih minimal 1 guru'); return; }
+  if (!confirm('Hapus ' + _selectedGuru.size + ' guru terpilih?')) return;
+  let arr = DB.getArr('guru').filter(g=>!_selectedGuru.has(g.id));
+  DB.set('guru', arr);
+  showToast('&#10003; ' + _selectedGuru.size + ' guru dihapus');
+  exitSelectGuru();
+  document.getElementById('stGuru').textContent = DB.getArr('guru').length;
+}
+
+// ---- SELECT MODE: KELAS ----
+function enterSelectKelas() {
+  _selectedKelas.clear();
+  document.getElementById('tKelas').classList.add('select-mode');
+  document.getElementById('selectBarKelas').classList.add('on');
+  document.getElementById('btnBulkEditKelas').style.display='inline-flex';
+  document.getElementById('btnBulkDelKelas').style.display='inline-flex';
+  renderKelas();
+}
+function exitSelectKelas() {
+  _selectedKelas.clear();
+  document.getElementById('tKelas').classList.remove('select-mode');
+  document.getElementById('selectBarKelas').classList.remove('on');
+  document.getElementById('btnBulkEditKelas').style.display='none';
+  document.getElementById('btnBulkDelKelas').style.display='none';
+  document.getElementById('checkAllKelas').checked=false;
+  renderKelas();
+}
+function toggleSelectKelas(id) {
+  if (_selectedKelas.has(id)) _selectedKelas.delete(id); else _selectedKelas.add(id);
+  renderKelas();
+}
+function toggleSelectAllKelas(cb) {
+  const list = DB.getArr('kelas');
+  if (cb.checked) list.forEach(k=>_selectedKelas.add(k.id)); else _selectedKelas.clear();
+  renderKelas();
+}
+function updateSelectCountKelas() {
+  const el = document.getElementById('selectCountKelas');
+  if (el) el.textContent = _selectedKelas.size + ' dipilih';
+}
+function bulkEditKelas() {
+  const isSelect = document.getElementById('tKelas').classList.contains('select-mode');
+  if (!isSelect) { enterSelectKelas(); showToast('Centang kelas yang ingin diedit, lalu tap Edit lagi'); return; }
+  if (!_selectedKelas.size) { showToast('&#9888;&#65039; Pilih minimal 1 kelas'); return; }
+  if (_selectedKelas.size===1) { const id=[..._selectedKelas][0]; exitSelectKelas(); openEditKelas(id); }
+  else { showToast('&#9888;&#65039; Pilih 1 kelas untuk diedit sekaligus'); }
+}
+async function bulkDeleteKelas() {
+  const isSelect = document.getElementById('tKelas').classList.contains('select-mode');
+  if (!isSelect) { enterSelectKelas(); showToast('Centang kelas yang ingin dihapus, lalu tap Hapus lagi'); return; }
+  if (!_selectedKelas.size) { showToast('&#9888;&#65039; Pilih minimal 1 kelas'); return; }
+  if (!confirm('Hapus ' + _selectedKelas.size + ' kelas terpilih?')) return;
+  let arr = DB.getArr('kelas').filter(k=>!_selectedKelas.has(k.id));
+  DB.set('kelas', arr);
+  showToast('&#10003; ' + _selectedKelas.size + ' kelas dihapus');
+  exitSelectKelas();
+  fillKelasOptions();
+  document.getElementById('stKelas').textContent = DB.getArr('kelas').length;
+}
+
+// ---- EDIT GURU ----
+function openEditGuru(id) {
+  const g = DB.getArr('guru').find(x=>x.id==id);
+  if (!g) return;
+  fillKelasOptions(['eGuruKelas']);
+  document.getElementById('eGuruId').value = g.id;
+  document.getElementById('eGuruNIP').value = g.nip||'';
+  document.getElementById('eGuruNama').value = g.nama||'';
+  setTimeout(()=>{ document.getElementById('eGuruKelas').value = g.kelas||''; },50);
+  document.getElementById('eGuruMapel').value = g.mapel||'';
+  document.getElementById('eGuruPass').value = '';
+  openModal('mEditGuru');
+}
+
+async function updateGuru() {
+  const id = document.getElementById('eGuruId').value;
+  const upd = {
+    nip: document.getElementById('eGuruNIP').value.trim(),
+    nama: document.getElementById('eGuruNama').value.trim(),
+    kelas: document.getElementById('eGuruKelas').value,
+    mapel: document.getElementById('eGuruMapel').value.trim(),
+  };
+  const np = document.getElementById('eGuruPass').value;
+  if (np) upd.pass = np;
+  if (!upd.nama) { showToast('&#9888;&#65039; Nama wajib diisi'); return; }
+  await API.update('guru', parseFloat(id), upd, 'updateGuru');
+  closeModal('mEditGuru');
+  showToast('&#10003; Data guru diperbarui!');
+  renderGuru();
+}
+
+// ---- EDIT KELAS ----
+function openEditKelas(id) {
+  const k = DB.getArr('kelas').find(x=>x.id==id);
+  if (!k) return;
+  document.getElementById('eKelasId').value = k.id;
+  document.getElementById('eKelasLevel').value = k.level||'I';
+  document.getElementById('eKelasNama').value = k.nama||'A';
+  document.getElementById('eKelasTahun').value = k.tahun||'2025/2026';
+  openModal('mEditKelas');
+}
+
+async function updateKelas() {
+  const id = document.getElementById('eKelasId').value;
+  const level = document.getElementById('eKelasLevel').value;
+  const nama = document.getElementById('eKelasNama').value.trim();
+  const tahun = document.getElementById('eKelasTahun').value.trim();
+  if (!nama) { showToast('&#9888;&#65039; Nama kelas wajib diisi'); return; }
+  const upd = { level, nama, full: level+'-'+nama, tahun };
+  await API.update('kelas', parseFloat(id), upd, 'updateKelas');
+  closeModal('mEditKelas');
+  showToast('&#10003; Data kelas diperbarui!');
+  renderKelas();
+  fillKelasOptions();
+}
+
 initDemo();
 loadSchoolInfo();
 </script>
