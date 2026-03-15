@@ -47,11 +47,15 @@ body.no-nav{padding-bottom:0}
 /* === BOTTOM NAV === */
 .bnav{position:fixed;bottom:0;left:0;right:0;height:var(--nav);background:var(--white);
   display:flex;border-top:2.5px solid var(--blue2);box-shadow:0 -4px 20px rgba(21,101,192,.15);z-index:95}
-.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--gray3);transition:.2s;padding:8px 2px;position:relative;border:none;background:none}
+.bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:var(--gray3);transition:.2s;padding:6px 1px;position:relative;border:none;background:none}
 .bnav-item.on{color:var(--red)}
 .bnav-item.on::before{content:'';position:absolute;top:0;left:18%;right:18%;height:3px;background:linear-gradient(90deg,var(--red),var(--red2));border-radius:0 0 4px 4px}
-.bnav-item svg{width:23px;height:23px;stroke-width:2}
-.bnav-label{font-size:9.5px;font-weight:800;font-family:var(--f1);letter-spacing:.3px;text-transform:uppercase}
+.bnav-item svg{width:21px;height:21px;stroke-width:2}
+.bnav-label{font-size:8.5px;font-weight:800;font-family:var(--f1);letter-spacing:.3px;text-transform:uppercase}
+/* Home button special style */
+#nMenuUtama{background:linear-gradient(180deg,var(--yellow-bg) 0%,rgba(255,248,225,0) 100%);border-right:1.5px solid var(--gray1)}
+#nMenuUtama svg{color:var(--yellow3)}
+#nMenuUtama:hover{background:var(--yellow-bg)}
 
 /* === PAGES === */
 .page{display:none;padding:14px;animation:pgIn .22s ease}
@@ -517,6 +521,10 @@ textarea.fc{resize:vertical;min-height:76px;line-height:1.6}
 
 <!-- ======== BOTTOM NAV ======== -->
 <nav class="bnav" id="appNav" style="display:none">
+  <a class="bnav-item" href="https://hasbullahjaini1979-ship-it.github.io/menutama/#" target="_blank" id="nMenuUtama" style="text-decoration:none;color:var(--yellow3)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" style="width:23px;height:23px;stroke-width:2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="bnav-label" style="color:var(--yellow3)">Menu</span>
+  </a>
   <button class="bnav-item on" onclick="goPage('Dashboard')" id="nDashboard">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
     <span class="bnav-label">Beranda</span>
@@ -677,13 +685,17 @@ let S = { role:null, user:null, selRole:'admin', answers:{}, asesmenDone:false }
 // ===========================
 // GS CONFIG
 // ===========================
+const GAS_URL_DEFAULT = 'https://script.google.com/macros/s/AKfycbx09QS_HXnoqbNdPxjarkStG609miBQFBVYvrGDWlE5c7ENDixEF3YmaVH_p-y8vmgm/exec';
+
 const GS = {
-  url: localStorage.getItem('gs_url')||'',
-  isConnected: ()=>!!localStorage.getItem('gs_url'),
+  url: localStorage.getItem('gs_url') || GAS_URL_DEFAULT,
+  isConnected: ()=> !!(localStorage.getItem('gs_url') || GAS_URL_DEFAULT),
+  getUrl: ()=> localStorage.getItem('gs_url') || GAS_URL_DEFAULT,
   async call(action, extra={}) {
-    if (!GS.url) return null;
+    const url = GS.getUrl();
+    if (!url) return null;
     try {
-      const res = await fetch(GS.url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action,...extra}),signal:AbortSignal.timeout(15000)});
+      const res = await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action,...extra}),signal:AbortSignal.timeout(15000)});
       return await res.json();
     } catch(e){console.warn('GS:',e.message);return null;}
   },
@@ -707,7 +719,24 @@ const API = {
   async add(key,data,action){const r={...data,id:String(Date.now())};if(GS.isConnected()){const res=await GS.call(action||'add'+cap(key),{data:r});if(res?.id)r.id=res.id;}const a=DB.getArr(key);a.push(r);DB.set(key,a);return r;},
   async update(key,id,data,action){if(GS.isConnected())await GS.call(action||'update'+cap(key),{id,data});DB.update(key,id,data);},
   async remove(key,id,action){if(GS.isConnected())await GS.call(action||'delete'+cap(key),{id});DB.remove(key,id);},
-  async login(role,u,p){if(GS.isConnected()){const r=await GS.call('login',{role,username:u,password:p});if(r)return r;}return loginLocal(role,u,p);},
+  async login(role,u,p){
+    // Always try to sync latest guru/murid data from GSheets first
+    if(GS.isConnected()){
+      try {
+        // Try GAS login action first
+        const r=await GS.call('login',{role,username:u,password:p});
+        if(r&&r.success)return r;
+        // If GAS doesn't have login handler, sync data then try local
+        const [guruData, muridData] = await Promise.all([
+          GS.call('getGuru'),
+          GS.call('getMurid'),
+        ]);
+        if(Array.isArray(guruData)) DB.set('guru', guruData);
+        if(Array.isArray(muridData)) DB.set('murid', muridData);
+      } catch(e){ console.warn('GS login sync failed:', e.message); }
+    }
+    return loginLocal(role,u,p);
+  },
   async getStats(){if(GS.isConnected()){const r=await GS.call('getStats');if(r?.success)return r;}return{murid:DB.getArr('murid').length,guru:DB.getArr('guru').length,kelas:DB.getArr('kelas').length,asesmen:DB.getArr('asesmen').length};},
   async saveAsesmen(data){if(GS.isConnected())await GS.call('saveAsesmen',{data});const a=DB.getArr('asesmen');const i=a.findIndex(x=>String(x.muridId)===String(data.muridId));if(i>=0)a[i]={...a[i],...data};else a.push({...data,id:String(Date.now())});DB.set('asesmen',a);},
   async resetSoal(tipe){if(GS.isConnected())await GS.call('resetSoal',{tipe});if(tipe==='non')DB.set('soalNonAkademik',buildDefaultSoalNonAkademik());else DB.set('soalAkademik',buildDefaultSoalAkademik());},
@@ -717,9 +746,24 @@ const API = {
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1);}
 
 function loginLocal(role,u,p){
-  if(role==='admin'&&u==='admin'&&p==='admin123')return{success:true,role:'admin',user:{nama:'Administrator',id:'admin'}};
-  if(role==='guru'){const g=DB.getArr('guru').find(x=>(x.user===u||x.nip===u)&&x.pass===p);if(g)return{success:true,role:'guru',user:g};}
-  if(role==='murid'){const m=DB.getArr('murid').find(x=>(x.user===u||x.nis===u)&&x.pass===p);if(m)return{success:true,role:'murid',user:m};}
+  // Convert to string for safe comparison (data from GSheets may have numbers)
+  const us = String(u).trim();
+  const ps = String(p).trim();
+  if(role==='admin'&&us==='admin'&&ps==='admin123')return{success:true,role:'admin',user:{nama:'Administrator',id:'admin'}};
+  if(role==='guru'){
+    const g=DB.getArr('guru').find(x=>
+      (String(x.user||'').trim()===us || String(x.nip||'').trim()===us) &&
+      String(x.pass||'').trim()===ps
+    );
+    if(g)return{success:true,role:'guru',user:g};
+  }
+  if(role==='murid'){
+    const m=DB.getArr('murid').find(x=>
+      (String(x.user||'').trim()===us || String(x.nis||'').trim()===us) &&
+      String(x.pass||'').trim()===ps
+    );
+    if(m)return{success:true,role:'murid',user:m};
+  }
   return{success:false,error:'Username atau password salah'};
 }
 
@@ -748,10 +792,19 @@ function pickRole(r,el){S.selRole=r;document.querySelectorAll('.role-tab').forEa
 async function doLogin(){
   const u=document.getElementById('lUser').value.trim(),p=document.getElementById('lPass').value.trim();
   if(!u||!p){showToast('⚠️ Isi username dan password');return;}
-  const btn=document.querySelector('.login-box .btn-red');btn.textContent='⏳ Memverifikasi...';btn.disabled=true;
+  const btn=document.querySelector('.login-box .btn-red');
+  btn.textContent='⏳ Mengambil data...';btn.disabled=true;
   const res=await API.login(S.selRole,u,p);
   btn.textContent='🔐 Masuk';btn.disabled=false;
-  if(!res?.success){showToast('❌ '+(res?.error||'Username atau password salah!'));return;}
+  if(!res?.success){
+    // Debug hint
+    const guruCount = DB.getArr('guru').length;
+    const muridCount = DB.getArr('murid').length;
+    const hint = (S.selRole==='guru'||S.selRole==='murid') ?
+      ` (${guruCount} guru, ${muridCount} murid tersimpan)` : '';
+    showToast('❌ '+(res?.error||'Username atau password salah!')+hint);
+    return;
+  }
   const{role,user}=res;S.role=role;S.user=user;
   document.getElementById('loginWrap').style.display='none';
   document.getElementById('appHdr').style.display='flex';
@@ -764,7 +817,6 @@ async function doLogin(){
   else if(role==='guru'){nd.style.display='none';document.getElementById('nAsesmenLbl').textContent='Soal';}
   else{nd.style.display='none';document.getElementById('nAsesmenLbl').textContent='Asesmen';}
   document.getElementById('mUserInfo').innerHTML=`<div class="av" style="background:var(--red)">${role==='admin'?'👨‍💼':role==='guru'?'👩‍🏫':'🧑‍🎓'}</div><div class="li-info"><div class="li-name">${user.nama}</div><div class="li-det">${role.toUpperCase()} · SDN 1 Raja</div></div><span class="bdg bdg-red">${role}</span>`;
-  if(GS.isConnected())API.syncAll().then(()=>loadDashboard());
   goPage('Dashboard');
 }
 
@@ -817,7 +869,9 @@ function loadDashboard(){
   document.getElementById('schNama').value=sch.nama||'';document.getElementById('schNPSN').value=sch.npsn||'';
   document.getElementById('schKepsek').value=sch.kepsek||'';document.getElementById('schKepsekNIP').value=sch.kepsekNIP||'';
   document.getElementById('schAlamat').value=sch.alamat||'';
-  updateGSBanner();document.getElementById('gsUrlInput').value=GS.url||'';
+  updateGSBanner();
+  const gsInput = document.getElementById('gsUrlInput');
+  if(gsInput) gsInput.value = localStorage.getItem('gs_url') || GAS_URL_DEFAULT;
   API.getStats().then(s=>{document.getElementById('stMurid').textContent=s.murid||DB.getArr('murid').length;document.getElementById('stGuru').textContent=s.guru||DB.getArr('guru').length;document.getElementById('stKelas').textContent=s.kelas||DB.getArr('kelas').length;document.getElementById('stAsesmen').textContent=s.asesmen||DB.getArr('asesmen').length;});
   const menus={admin:[{i:'🧑‍🎓',l:'Data Murid',p:'Data'},{i:'👩‍🏫',l:'Data Guru',p:'Data'},{i:'🏫',l:'Kelas',p:'Data'},{i:'📝',l:'Soal',p:'Asesmen'},{i:'👤',l:'Profil',p:'Profil'},{i:'🖨️',l:'Laporan',p:'Laporan'}],guru:[{i:'📝',l:'Kelola Soal',p:'Asesmen'},{i:'👤',l:'Profil Murid',p:'Profil'},{i:'🖨️',l:'Cetak Laporan',p:'Laporan'}],murid:[{i:'📝',l:'Ikuti Asesmen',p:'Asesmen'},{i:'👤',l:'Profil Saya',p:'Profil'}]};
   document.getElementById('qMenu').innerHTML=(menus[S.role]||[]).map(m=>`<button class="qm-btn" onclick="goPage('${m.p}')"><div class="qm-ico">${m.i}</div><div class="qm-lbl">${m.l}</div></button>`).join('');
@@ -826,18 +880,20 @@ function loadDashboard(){
 
 function updateGSBanner(){
   const b=document.getElementById('gsBanner'),ti=document.getElementById('gsBannerTitle'),su=document.getElementById('gsBannerSub');
+  const connected = GS.isConnected();
   if(!b)return;
-  if(GS.isConnected()){b.style.background='linear-gradient(135deg,#1e8449,#27AE60)';b.style.color='#fff';ti.textContent='✅ Terhubung ke Google Sheets';su.textContent='Data tersimpan online · Tap untuk pengaturan';}
+  if(connected){b.style.background='linear-gradient(135deg,#1e8449,#27AE60)';b.style.color='#fff';ti.textContent='✅ Terhubung ke Google Sheets';su.textContent='Data tersimpan online · Tap untuk pengaturan';}
   else{b.style.background='var(--gray1)';b.style.color='var(--gray7)';ti.textContent='📴 Mode Lokal (Offline)';su.textContent='Data hanya di browser ini · Tap untuk hubungkan GSheets';}
   const box=document.getElementById('gsStatusBox');
-  if(box){if(GS.isConnected()){box.style.background='#eafaf1';box.style.color='#1e8449';box.innerHTML='✅ <strong>Terhubung!</strong> Data tersinkron.<br><small style="font-weight:400">'+GS.url.substring(0,55)+'...</small>';}else{box.style.background='var(--gray1)';box.style.color='var(--gray5)';box.innerHTML='📴 <strong>Belum terhubung.</strong> Masukkan URL Apps Script lalu Test Koneksi.';}}
+  const activeUrl = GS.getUrl();
+  if(box){if(connected){box.style.background='#eafaf1';box.style.color='#1e8449';box.innerHTML='✅ <strong>Terhubung!</strong> Data tersinkron.<br><small style="font-weight:400">'+activeUrl.substring(0,60)+'...</small>';}else{box.style.background='var(--gray1)';box.style.color='var(--gray5)';box.innerHTML='📴 <strong>Belum terhubung.</strong> Masukkan URL Apps Script lalu Test Koneksi.';}}
 }
 
 async function testGSConnection(){const url=document.getElementById('gsUrlInput').value.trim(),btn=document.querySelector('#mGSConfig .btn-blue'),res=document.getElementById('gsTestResult');if(!url){showToast('⚠️ Masukkan URL');return;}btn.textContent='⏳ Menguji...';btn.disabled=true;res.innerHTML='<span style="color:var(--gray5)">Menghubungkan...</span>';const ok=await GS.testConnection(url);btn.textContent='🔗 Test';btn.disabled=false;if(ok)res.innerHTML='<span style="color:#27AE60;font-weight:700">✅ Berhasil!</span>';else res.innerHTML='<span style="color:var(--red);font-weight:700">❌ Gagal. Pastikan URL benar & sudah di-deploy.</span>';}
 
 async function saveGSConfig(){const url=document.getElementById('gsUrlInput').value.trim();if(!url){showToast('⚠️ URL tidak boleh kosong');return;}localStorage.setItem('gs_url',url);GS.url=url;updateGSBanner();showToast('✅ URL disimpan!');closeModal('mGSConfig');await API.syncAll();loadDashboard();}
 
-function disconnectGS(){if(!confirm('Putuskan koneksi Google Sheets?'))return;localStorage.removeItem('gs_url');GS.url='';updateGSBanner();closeModal('mGSConfig');showToast('🔌 Koneksi diputus.');loadDashboard();}
+function disconnectGS(){if(!confirm('Putuskan koneksi custom? (URL bawaan tetap aktif)'))return;localStorage.removeItem('gs_url');GS.url=GAS_URL_DEFAULT;updateGSBanner();closeModal('mGSConfig');showToast('🔌 Kembali ke URL bawaan.');loadDashboard();}
 
 async function renderAnnounce(){
   const anns=await API.getArr('announce','getAnnounce');
@@ -1363,6 +1419,10 @@ async function bulkDeleteKelas(){const isSel=document.getElementById('tKelas').c
 // ===========================
 initDemo();
 loadSchoolInfo();
+// Auto-sync from GSheets on startup (background, no blocking)
+setTimeout(()=>{
+  API.syncAll().catch(()=>{});
+}, 500);
 </script>
 </body>
 </html>
